@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StreamCalc - Suscripciones Tech</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;500;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        tech: ['Outfit', 'sans-serif'], // Fuente moderna y elegante para títulos
+                    },
+                    colors: {
+                        tech: {
+                            black: '#0a0a0a',
+                            dark: '#141414',
+                            gray: '#222222',
+                            orange: '#ff6a00',
+                            yellow: '#ffcc00',
+                        }
+                    },
+                    boxShadow: {
+                        'neon': '0 0 15px rgba(255, 106, 0, 0.5)',
+                        'neon-strong': '0 0 25px rgba(255, 204, 0, 0.6)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #050505;
+            color: #ffffff;
+            background-image: 
+                linear-gradient(rgba(255, 106, 0, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 106, 0, 0.03) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0a0a0a; }
+        ::-webkit-scrollbar-thumb { background: #ff6a00; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #ffcc00; }
+
+        .service-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .service-card.selected {
+            border-color: transparent;
+            background: linear-gradient(#141414, #141414) padding-box,
+                        linear-gradient(135deg, #ff6a00, #ffcc00) border-box;
+            border: 2px solid transparent;
+            box-shadow: 0 0 20px rgba(255, 106, 0, 0.2);
+            transform: translateY(-5px);
+        }
+
+        .check-icon {
+            opacity: 0;
+            transform: scale(0.5);
+            transition: all 0.3s ease;
+        }
+        .selected .check-icon { opacity: 1; transform: scale(1); }
+
+        .text-gradient {
+            background: linear-gradient(to right, #ff6a00, #ffcc00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Estilo para los selects nativos en dark mode */
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 0.5rem center;
+            background-size: 1em;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans antialiased pb-32">
+
+    <header class="w-full py-6 px-6 border-b border-tech-gray bg-tech-black/80 backdrop-blur-md sticky top-0 z-40">
+        <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-tech-orange to-tech-yellow flex items-center justify-center shadow-neon">
+                    <svg class="w-6 h-6 text-tech-black" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                </div>
+                <h1 class="text-3xl font-tech font-extrabold text-white tracking-wide">
+                    STREAM<span class="text-gradient">CALC</span>
+                </h1>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <div class="text-xs sm:text-sm text-gray-400 font-medium bg-tech-gray/50 px-4 py-2 rounded-full border border-gray-800">
+                    <span class="inline-block w-2 h-2 rounded-full bg-tech-yellow mr-2 animate-pulse"></span>
+                    Dólar Tarjeta Est. $1.550 ARS
+                </div>
+                <button onclick="toggleModal('guide-modal')" class="text-sm font-tech font-semibold text-white bg-neutral-800 hover:bg-neutral-700 px-4 py-2 rounded-lg border border-neutral-700 transition-colors">
+                    Guía & Info
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow w-full max-w-6xl mx-auto px-4 sm:px-6 pt-8">
+        <div class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+            <div>
+                <h2 class="text-2xl font-tech font-semibold mb-2">Selecciona tus suscripciones</h2>
+                <p class="text-gray-400 text-sm md:text-base max-w-2xl">Calcula el costo mensual de tus plataformas favoritas. Selecciona el nivel de plan en cada tarjeta. Los precios en ARS incluyen impuestos estimados (60%).</p>
+            </div>
+            <div class="flex gap-2 sm:gap-3 w-full md:w-auto">
+                <button onclick="selectAll()" class="flex-1 md:flex-none text-xs sm:text-sm font-medium bg-tech-orange hover:bg-[#e65c00] text-black px-4 py-2.5 rounded-lg transition-colors shadow-neon">
+                    Seleccionar Todo
+                </button>
+                <button onclick="deselectAll()" class="flex-1 md:flex-none text-xs sm:text-sm font-medium bg-transparent border border-gray-700 hover:border-gray-500 text-gray-300 px-4 py-2.5 rounded-lg transition-colors">
+                    Limpiar
+                </button>
+            </div>
+        </div>
+
+        <!-- Grid for Service Cards: Responsive 2 (móvil) - 3 (tablet) - 4 (desktop) -->
+        <div id="services-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
+            <!-- Las tarjetas se inyectarán aquí -->
+        </div>
+    </main>
+
+    <div class="fixed bottom-0 left-0 w-full bg-tech-black/95 backdrop-blur-lg border-t border-tech-orange/30 p-4 sm:p-6 z-40 shadow-[0_-10px_30px_rgba(255,106,0,0.1)] transition-transform duration-300" id="total-bar">
+        <div class="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-4">
+                <div class="hidden sm:flex w-12 h-12 rounded-full bg-tech-gray items-center justify-center border border-gray-700">
+                    <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                </div>
+                <div>
+                    <p class="text-gray-400 text-sm font-medium">Servicios seleccionados: <span id="selected-count" class="text-white font-bold">0</span></p>
+                    <p class="text-xs text-gray-500 mt-1">Suma mensual aproximada</p>
+                </div>
+            </div>
+            <div class="flex items-end gap-2">
+                <span class="text-gray-400 font-sans font-medium text-lg sm:text-xl mb-1 sm:mb-2">ARS$</span>
+                <!-- Reducción de grosor de fuente: de font-bold a font-medium (mitad de peso visual) -->
+                <span id="total-amount" class="text-3xl sm:text-5xl font-sans font-medium text-gradient tracking-tight">0,00</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="guide-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden opacity-0 transition-opacity duration-300 flex items-center justify-center p-4">
+        <div class="bg-tech-dark border border-gray-800 rounded-2xl max-w-lg w-full p-6 sm:p-8 relative shadow-2xl transform scale-95 transition-transform duration-300" id="guide-content">
+            <button onclick="toggleModal('guide-modal')" class="absolute top-4 right-4 p-2 text-gray-400 hover:text-white bg-gray-900 rounded-full transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            
+            <h3 class="text-2xl font-tech font-bold mb-6 text-gradient border-b border-gray-800 pb-4">Guía de StreamCalc</h3>
+            
+            <div class="space-y-5 text-gray-300 text-sm font-sans leading-relaxed">
+                <div>
+                    <h4 class="text-white font-semibold mb-1">🎯 ¿Para qué sirve y cómo funciona?</h4>
+                    <p>Esta calculadora te permite estimar el gasto mensual total de tus plataformas de streaming. Simplemente haz clic en las tarjetas para seleccionar o deseleccionar servicios, y elige el plan que tienes contratado en el menú desplegable. El total se actualizará automáticamente en la barra inferior.</p>
+                </div>
+                
+                <div>
+                    <h4 class="text-white font-semibold mb-1">📊 Origen de los datos (Precios y Planes)</h4>
+                    <p>Los precios mostrados son estimaciones basadas en los valores oficiales publicados por las plataformas, incluyendo el cálculo aproximado del 60% en concepto de impuestos vigentes para consumos en moneda extranjera (PAIS, Ganancias, etc.) para tarjetas emitidas en Argentina. El valor del dólar tarjeta se establece manualmente como referencia.</p>
+                </div>
+                
+                <div>
+                    <h4 class="text-white font-semibold mb-1">💻 Tecnología</h4>
+                    <p>Desarrollada íntegramente del lado del cliente como una Single Page Application (SPA). Utiliza <strong>HTML5</strong>, <strong>Tailwind CSS</strong> para la interfaz adaptable (responsive) y <strong>Vanilla JavaScript</strong> para la lógica de cálculo y estado, sin necesidad de bases de datos ni servidores externos.</p>
+                </div>
+                
+                <div class="mt-6 pt-5 border-t border-gray-800 text-center">
+                    <p class="text-tech-orange font-medium flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+                        Herramienta 100% gratuita, sin anuncios y verdaderamente Open Source.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const DOLAR_TARJETA = 1550; // Tipo de cambio estimado
+
+        // Datos con planes anidados
+        const services = [
+            {
+                id: 'netflix',
+                name: 'Netflix',
+                method: 'Tarjeta / MercadoPago',
+                logo: `<svg viewBox="0 0 111 30" fill="none" class="w-16 sm:w-20" xmlns="http://www.w3.org/2000/svg"><path d="M105.062 14.28L111 30C111 30 108.625 29.8394 105.772 29.5606C103.201 29.314 100.222 28.9616 97.4338 28.536L97.4369 28.534L89.702 8.44186V27.1264L82.1643 25.6888V0.0135832L89.6057 1.44297L97.4725 21.9056V2.95543L105.062 4.41407V14.28ZM74.8368 24.3168V21.1466H81.332V14.1508H74.8368V11.233H81.8105V4.24036H67.2285V22.8687C69.7571 23.3644 72.3023 23.8443 74.8368 24.3168ZM51.3658 20.3015L56.9745 21.4326V14.4128H62.9038V7.41071H56.9745V3.88219H64.0624V-0.00336267H49.3622V19.8974C50.0279 20.0333 50.6974 20.1685 51.3658 20.3015ZM41.8797 18.397L46.6115 19.347V0.00336267H39.0069V17.8209C39.957 18.0163 40.9169 18.2084 41.8797 18.397ZM31.4284 16.3059H36.9859V9.30036H31.4284V6.44222H38.563V-0.00336267H23.8227V14.808C26.3533 15.321 28.8951 15.8209 31.4284 16.3059ZM14.922 13.0645H20.7303V6.05206H14.922V3.46979H22.0623V-0.00336267H7.31932V11.6429C9.84587 12.1287 12.383 12.6027 14.922 13.0645ZM0 8.64734V10.1558L7.6833 11.7161V4.7071H0V8.64734Z" fill="#E50914"/></svg>`,
+                plans: [
+                    { id: 'net_basico', name: 'Básico (720p)', priceARS: 4299, priceUSD: null },
+                    { id: 'net_estandar', name: 'Estándar (1080p)', priceARS: 7199, priceUSD: null },
+                    { id: 'net_premium', name: 'Premium (4K+HDR)', priceARS: 9699, priceUSD: null }
+                ]
+            },
+            {
+                id: 'prime',
+                name: 'Prime Video',
+                method: 'Tarjeta de Crédito',
+                logo: `<svg viewBox="0 0 100 30" fill="none" class="w-20 sm:w-24" xmlns="http://www.w3.org/2000/svg"><path d="M47.5 15c0 4.1-3.4 7.5-7.5 7.5s-7.5-3.4-7.5-7.5 3.4-7.5 7.5-7.5 7.5 3.4 7.5 7.5zm-11.2 0c0 2.1 1.7 3.8 3.8 3.8s3.8-1.7 3.8-3.8-1.7-3.8-3.8-3.8-3.8 1.7-3.8 3.8z" fill="#00A8E1"/><text x="0" y="22" font-family="Inter" font-weight="900" font-style="italic" font-size="24" fill="#fff">prime</text><path d="M5 28 Q 25 35 45 28 Q 25 32 5 28" fill="#00A8E1"/><path d="M42 25 L 48 29 L 40 31 Z" fill="#00A8E1"/></svg>`,
+                plans: [
+                    { id: 'prime_mensual', name: 'Mensual Único', priceARS: 3499, priceUSD: null }
+                ]
+            },
+            {
+                id: 'max',
+                name: 'Max',
+                method: 'Tarjeta de Crédito',
+                logo: `<svg viewBox="0 0 100 30" fill="none" class="w-14 sm:w-16" xmlns="http://www.w3.org/2000/svg"><text x="0" y="25" font-family="Outfit" font-weight="900" font-size="28" fill="#002BE7" letter-spacing="-2">MAX</text></svg>`,
+                plans: [
+                    { id: 'max_ads', name: 'Básico c/ Anuncios', priceARS: 2190, priceUSD: null },
+                    { id: 'max_std', name: 'Estándar', priceARS: 2890, priceUSD: null },
+                    { id: 'max_plat', name: 'Platino', priceARS: 3490, priceUSD: null }
+                ]
+            },
+            {
+                id: 'apple',
+                name: 'Apple TV+',
+                method: 'Tarjeta Int. (USD)',
+                logo: `<svg viewBox="0 0 100 35" fill="none" class="w-20 sm:w-24" xmlns="http://www.w3.org/2000/svg"><path d="M16.5 13.9C16.5 10.4 19.3 8.6 19.4 8.5C17.7 6.1 15.1 5.7 14.2 5.6C12.1 5.4 10.0 6.9 8.9 6.9C7.8 6.9 6.0 5.6 4.3 5.6C2.1 5.6 0.1 6.9 0 9.7C-0.2 14.0 2.8 20.6 5.1 23.9C6.2 25.4 7.5 27.2 9.1 27.1C10.7 27.0 11.3 26.1 13.3 26.1C15.2 26.1 15.7 27.1 17.4 27.1C19.1 27.1 20.2 25.5 21.3 23.9C22.6 22.0 23.1 20.1 23.2 20.0C23.1 20.0 16.5 17.5 16.5 13.9ZM13.8 3.7C14.6 2.7 15.2 1.4 15.0 0C13.8 0.1 12.3 0.8 11.4 1.8C10.7 2.6 10.0 3.9 10.2 5.3C11.6 5.4 13.0 4.6 13.8 3.7Z" fill="#fff"/><text x="30" y="22" font-family="Inter" font-weight="600" font-size="20" fill="#fff">tv+</text></svg>`,
+                plans: [
+                    { id: 'app_mensual', name: 'Suscripción Mensual', priceARS: null, priceUSD: 9.99 }
+                ]
+            },
+            {
+                id: 'disney',
+                name: 'Disney+',
+                method: 'Tarjeta / MercadoPago',
+                logo: `<svg viewBox="0 0 100 40" fill="none" class="w-20 sm:w-24" xmlns="http://www.w3.org/2000/svg"><text x="0" y="28" font-family="Inter" font-style="italic" font-weight="400" font-size="28" fill="#fff">Disney</text><path d="M85 10 L 85 20 M 80 15 L 90 15" stroke="#113CCF" stroke-width="3" stroke-linecap="round"/><path d="M 0 35 Q 40 45 80 30" fill="none" stroke="#fff" stroke-width="1.5"/></svg>`,
+                plans: [
+                    { id: 'dis_std', name: 'Estándar', priceARS: 7399, priceUSD: null },
+                    { id: 'dis_prem', name: 'Premium', priceARS: 10549, priceUSD: null }
+                ]
+            },
+            {
+                id: 'paramount',
+                name: 'Paramount+',
+                method: 'Tarjeta de Crédito',
+                logo: `<svg viewBox="0 0 120 40" fill="none" class="w-24 sm:w-28" xmlns="http://www.w3.org/2000/svg"><path d="M15 30 L25 10 L35 30 Z" fill="#0064FF"/><circle cx="10" cy="15" r="2" fill="#fff"/><circle cx="20" cy="8" r="2" fill="#fff"/><circle cx="30" cy="8" r="2" fill="#fff"/><circle cx="40" cy="15" r="2" fill="#fff"/><text x="50" y="26" font-family="Outfit" font-weight="800" font-size="20" fill="#fff">Paramount+</text></svg>`,
+                plans: [
+                    { id: 'par_basico', name: 'Básico', priceARS: 1599, priceUSD: null },
+                    { id: 'par_std', name: 'Estándar', priceARS: 2499, priceUSD: null }
+                ]
+            }
+        ];
+
+        // Estado de la aplicación
+        const state = {
+            selectedServices: new Set(),
+            activePlans: {} // Mapea service.id a plan.id
+        };
+
+        const formatMoney = (amount) => {
+            return amount.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        };
+
+        // Obtener el plan activo completo para un servicio
+        const getActivePlan = (service) => {
+            const planId = state.activePlans[service.id];
+            return service.plans.find(p => p.id === planId) || service.plans[0];
+        };
+
+        const updateTotal = () => {
+            let totalARS = 0;
+            state.selectedServices.forEach(id => {
+                const service = services.find(s => s.id === id);
+                if (service) {
+                    const plan = getActivePlan(service);
+                    if (plan.priceARS) {
+                        totalARS += plan.priceARS;
+                    } else if (plan.priceUSD) {
+                        totalARS += (plan.priceUSD * DOLAR_TARJETA);
+                    }
+                }
+            });
+
+            document.getElementById('selected-count').innerText = state.selectedServices.size;
+            const amountElement = document.getElementById('total-amount');
+            
+            amountElement.style.opacity = '0.5';
+            setTimeout(() => {
+                amountElement.innerText = formatMoney(totalARS);
+                amountElement.style.opacity = '1';
+            }, 150);
+        };
+
+        const toggleService = (id) => {
+            const cardElement = document.getElementById(`card-${id}`);
+            if (state.selectedServices.has(id)) {
+                state.selectedServices.delete(id);
+                cardElement.classList.remove('selected');
+            } else {
+                state.selectedServices.add(id);
+                cardElement.classList.add('selected');
+            }
+            updateTotal();
+        };
+
+        const changePlan = (serviceId, planId, event) => {
+            // Evitar que el clic en el select active el toggle de la tarjeta entera
+            event.stopPropagation();
+            state.activePlans[serviceId] = planId;
+            
+            // Actualizar la visualización del precio de esa tarjeta
+            const service = services.find(s => s.id === serviceId);
+            const plan = getActivePlan(service);
+            
+            const displayPriceEl = document.getElementById(`price-display-${serviceId}`);
+            const subPriceEl = document.getElementById(`price-sub-${serviceId}`);
+            
+            if (plan.priceARS) {
+                displayPriceEl.innerText = `ARS$ ${formatMoney(plan.priceARS)}`;
+                subPriceEl.innerText = 'Final por mes';
+            } else if (plan.priceUSD) {
+                displayPriceEl.innerText = `USD$ ${plan.priceUSD}`;
+                subPriceEl.innerText = `~ ARS$ ${formatMoney(plan.priceUSD * DOLAR_TARJETA)}`;
+            }
+
+            // Actualizar el total general en caso de que este servicio esté seleccionado
+            if (state.selectedServices.has(serviceId)) {
+                updateTotal();
+            }
+        };
+
+        // Controles globales (Seleccionar/Deseleccionar todo)
+        const selectAll = () => {
+            services.forEach(s => {
+                state.selectedServices.add(s.id);
+                document.getElementById(`card-${s.id}`).classList.add('selected');
+            });
+            updateTotal();
+        };
+
+        const deselectAll = () => {
+            state.selectedServices.clear();
+            services.forEach(s => {
+                document.getElementById(`card-${s.id}`).classList.remove('selected');
+            });
+            updateTotal();
+        };
+
+        // Lógica del modal
+        const toggleModal = (modalId) => {
+            const modal = document.getElementById(modalId);
+            const content = document.getElementById('guide-content');
+            
+            if (modal.classList.contains('hidden')) {
+                modal.classList.remove('hidden');
+                // Timeout para permitir la transición de opacidad/escala
+                setTimeout(() => {
+                    modal.classList.remove('opacity-0');
+                    content.classList.remove('scale-95');
+                }, 10);
+            } else {
+                modal.classList.add('opacity-0');
+                content.classList.add('scale-95');
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                }, 300);
+            }
+        };
+
+        const renderCards = () => {
+            const grid = document.getElementById('services-grid');
+            grid.innerHTML = ''; // Limpiar grilla
+            
+            services.forEach(service => {
+                // Inicializar estado de plan si no existe
+                if (!state.activePlans[service.id]) {
+                    state.activePlans[service.id] = service.plans[0].id;
+                }
+                const activePlan = getActivePlan(service);
+                
+                // Construir opciones del Select
+                const selectOptions = service.plans.map(p => 
+                    `<option value="${p.id}" ${state.activePlans[service.id] === p.id ? 'selected' : ''}>${p.name}</option>`
+                ).join('');
+
+                // Textos iniciales de precios
+                let priceDisplay = '';
+                let priceSub = '';
+                if (activePlan.priceARS) {
+                    priceDisplay = `ARS$ ${formatMoney(activePlan.priceARS)}`;
+                    priceSub = 'Final por mes';
+                } else if (activePlan.priceUSD) {
+                    priceDisplay = `USD$ ${activePlan.priceUSD}`;
+                    priceSub = `~ ARS$ ${formatMoney(activePlan.priceUSD * DOLAR_TARJETA)}`;
+                }
+
+                const card = document.createElement('div');
+                card.id = `card-${service.id}`;
+                card.className = `service-card relative overflow-hidden rounded-2xl bg-tech-gray/40 border border-neutral-800 p-4 sm:p-5 cursor-pointer hover:border-tech-orange/50 group flex flex-col h-full`;
+                card.onclick = () => toggleService(service.id);
+                
+                // Mantener la selección visual al renderizar si ya estaba seleccionado
+                if (state.selectedServices.has(service.id)) {
+                    card.classList.add('selected');
+                }
+
+                card.innerHTML = `
+                    <div class="check-icon absolute top-3 right-3 sm:top-4 sm:right-4 bg-gradient-to-br from-tech-orange to-tech-yellow rounded-full p-1 shadow-neon z-10">
+                        <svg class="w-3 h-3 sm:w-4 sm:h-4 text-tech-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
+
+                    <div class="flex items-center justify-between mb-4 h-10 sm:h-12 pointer-events-none">
+                        <div class="flex items-center justify-center filter drop-shadow-md transform scale-90 sm:scale-100 origin-left">
+                            ${service.logo}
+                        </div>
+                    </div>
+
+                    <div class="space-y-3 mb-4 flex-grow">
+                        <div>
+                            <h3 class="text-base sm:text-lg font-tech font-bold text-white group-hover:text-tech-orange transition-colors">${service.name}</h3>
+                            <div class="flex items-center gap-1.5 mt-1 text-[10px] sm:text-xs text-gray-500">
+                                <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+                                <span class="truncate">${service.method}</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Select de Planes (Evita trigger de la tarjeta con onclick stopPropagation) -->
+                        <div class="relative w-full" onclick="event.stopPropagation()">
+                            <select onchange="changePlan('${service.id}', this.value, event)" class="w-full bg-black/40 border border-gray-700 text-gray-200 text-xs sm:text-sm rounded-lg block p-2 outline-none focus:border-tech-orange focus:ring-1 focus:ring-tech-orange transition-colors cursor-pointer pr-8">
+                                ${selectOptions}
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Precio: Grosor de fuente reducido a font-light (300) / font-normal (400) -->
+                    <div class="mt-auto pt-3 border-t border-gray-800 pointer-events-none">
+                        <p id="price-display-${service.id}" class="text-xl sm:text-2xl font-sans font-normal text-white tracking-tight">${priceDisplay}</p>
+                        <p id="price-sub-${service.id}" class="text-[10px] sm:text-xs text-tech-orange mt-0.5 font-medium">${priceSub}</p>
+                    </div>
+                `;
+                
+                grid.appendChild(card);
+            });
+        };
+
+        // Inicialización
+        window.onload = () => {
+            renderCards();
+            updateTotal();
+        };
+    </script>
+</body>
+</html>
