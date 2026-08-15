@@ -1,0 +1,4 @@
+{ "name". "StreamCalc - Suscripciones Tech", "short name": "StreamCalc", "description": "Calcula el costo mensual de tus
+plataformas de streaming en Argentina.", "start ur!"."/", "id":"/", "display": "standalone", "background color": "#050505",
+"theme_color": "#ff6a00", "icons": [ {"src": "/icon-192x192.png", "sizes": "192x192", "type": "image/png" }, { "src": "/icon-
+512x512.png", "sizes": "512x512", "type": "image/png" } ]}
